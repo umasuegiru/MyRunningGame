@@ -26,7 +26,11 @@ public class PlayerController : MonoBehaviour
     [Header("Coin Settings")]
     [SerializeField] private LayerMask coinLayer;  // 코인 레이어
     [SerializeField] private int coinValue = 100;  // 코인 획득 시 증가하는 점수
-
+    
+    // Inspector에서 등록할 파티클 시스템 변수
+    [SerializeField] private ParticleSystem coinEffect;
+    // Inspector에서 등록할 이펙트 변수
+    [SerializeField] private ParticleSystem collisionEffect;
     private Rigidbody rb;
     private Animator animator;  // Animator 컴포넌트 참조 추가
     private bool isGrounded;
@@ -225,23 +229,59 @@ public class PlayerController : MonoBehaviour
             // 장애물 제거
             Destroy(collision.gameObject);
 
+            // 이펙트 실행 - Inspector에서 등록한 이펙트 사용
+            if (collisionEffect != null)
+            {
+                // 이미 실행 중인지 확인
+                if (collisionEffect.isPlaying)
+                {
+                    // 실행 중이면 중지 후 다시 실행
+                    collisionEffect.Stop();
+                }
+
+                // 이펙트 실행
+                collisionEffect.Play();
+            }
+
             // 디버그 메시지
             Debug.Log("장애물과 충돌: 남은 체력 " + currentHealth + " (충돌 시간: " + Time.time + ")");
         }
-        
+
         // 코인 레이어와 충돌했는지 확인
         if (((1 << collision.gameObject.layer) & coinLayer.value) != 0)
         {
             // 점수 증가
             IncreaseScore(coinValue);
-            
+
             // 코인 제거
             Destroy(collision.gameObject);
-            
+
+            // 이펙트 재생
+            PlayCoinEffect();
+
             // 디버그 메시지
             Debug.Log("코인 획득! 총 점수: " + currentScore);
         }
     }
+
+    // 이펙트 재생 함수
+    private void PlayCoinEffect()
+    {
+        // Inspector에서 등록한 이펙트가 있는지 확인
+        if (coinEffect != null)
+        {
+            // 이미 재생 중인지 확인
+            if (coinEffect.isPlaying)
+            {
+                // 재생 중이면 중지 후 재생
+                coinEffect.Stop();
+            }
+
+            // 이펙트 재생
+            coinEffect.Play();
+        }
+    }
+
 
     // 디버깅을 위한 시각화
     private void OnDrawGizmosSelected()

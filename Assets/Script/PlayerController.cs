@@ -58,6 +58,13 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogWarning("ScoreUIManager가 없습니다. UI에 점수가 표시되지 않을 수 있습니다.");
         }
+        
+        // AudioSource 컴포넌트 가져오기 또는 생성하기
+        jumpAudioSource = GetComponent<AudioSource>();
+        if (jumpAudioSource == null)
+        {
+            jumpAudioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void Update()
@@ -117,13 +124,30 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector3(velocity.x, rb.linearVelocity.y, rb.linearVelocity.z);
     }
 
+    private AudioSource jumpAudioSource; // 점프 사운드를 위한 AudioSource
+    [SerializeField] private AudioClip jumpSound; // Inspector에서 등록할 사운드
+
     private void Jump()
     {
         // 수직 방향으로 힘 가하기
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        
+    
         // "Jump" 애니메이션 직접 재생 (Trigger 등 사용하지 않음)
         animator.Play(jumpAnimationName, 0, 0f);
+    
+        // 사운드 재생 로직
+        if (jumpSound != null)
+        {
+            // 사운드가 재생 중이면 중지
+            if (jumpAudioSource.isPlaying)
+            {
+                jumpAudioSource.Stop();
+            }
+        
+            // 사운드 재생
+            jumpAudioSource.clip = jumpSound;
+            jumpAudioSource.Play();
+        }
     }
 
     private void CheckGrounded()
